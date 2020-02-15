@@ -437,7 +437,6 @@ extern UniValue listcontracts(const UniValue& params, bool fHelp);
 extern UniValue gettransactionreceipt(const UniValue& params, bool fHelp);
 extern UniValue searchlogs(const UniValue& params, bool fHelp);
 extern UniValue waitforlogs(const UniValue& params, bool fHelp);
-extern UniValue pruneblockchain(const UniValue& params, bool fHelp);
 
 bool StartRPC();
 void InterruptRPC();

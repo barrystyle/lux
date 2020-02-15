@@ -3345,9 +3345,20 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
             LOCK(cs_main);
             IncrementExtraNonce(pblock, chainActive.Tip(), nExtraNonce);
         }
-        while (nMaxTries > 0 && pblock->nNonce < nInnerLoopCount && !CheckProofOfWork(pblock->GetHash(), pblock->nBits, Params().GetConsensus())) {
+	uint32_t hashState = 0;
+        int64_t hashStart = GetTimeMillis();
+        while (nMaxTries > 0 &&
+               pblock->nNonce < nInnerLoopCount &&
+               !ShutdownRequested() &&
+               !CheckProofOfWork(pblock->GetHash(nHeight+1), pblock->nBits, Params().GetConsensus()))
+            {
             ++pblock->nNonce;
             --nMaxTries;
+            if (GetTimeMillis()-hashStart>1000) {
+               LogPrintf("hashing @ %dh/s\n", pblock->nNonce-hashState);
+               hashState = pblock->nNonce;
+               hashStart=GetTimeMillis();
+            }
         }
         if (nMaxTries == 0) {
             break;
@@ -3356,7 +3367,7 @@ UniValue generateBlocks(std::shared_ptr<CReserveScript> coinbaseScript, int nGen
             continue;
         }
         CValidationState state;
-        if (!ProcessNewBlock(state, Params(), NULL, pblock))
+        if (!ProcessNewBlock(state, Params(), NULL, pblock, true, NULL, true))
             throw JSONRPCError(RPC_INTERNAL_ERROR, "ProcessNewBlock, block not accepted");
         ++nHeight;
         blockHashes.push_back(pblock->GetHash().GetHex());

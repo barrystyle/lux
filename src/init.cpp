@@ -30,10 +30,12 @@
 #include "miner.h"
 #include "net.h"
 #include "policy/policy.h"
+#include "primitives/block.h"
 #include "rpcserver.h"
 #include "script/standard.h"
 #include "script/sigcache.h"
 #include "scheduler.h"
+#include "seedstore.h"
 #include "spork.h"
 #include "txdb.h"
 #include "script/sigcache.h"
@@ -214,7 +216,6 @@ void PrepareShutdown()
 #ifdef ENABLE_WALLET
     if (pwalletMain)
         bitdb.Flush(false);
-//    GenerateBitcoins(NULL, 0);
 #endif
     StopNode();
     UnregisterNodeSignals(GetNodeSignals());
@@ -813,6 +814,9 @@ bool AppInit2()
     // Ignore SIGPIPE, otherwise it will bring the daemon down if the client closes unexpectedly
     signal(SIGPIPE, SIG_IGN);
 #endif
+
+    // ********************************************************* Step 1.5: seedHash retrieval
+    seedStoreInit();
 
     // ********************************************************* Step 2: parameter interactions
     const CChainParams& chainparams = Params();
@@ -1987,7 +1991,6 @@ bool AppInit2()
     threadGroup.create_thread(boost::bind(&ThreadCheckDarkSendPool));
 
     // ********************************************************* Step 11: start node
-
 
     StartNode(threadGroup, scheduler);
 

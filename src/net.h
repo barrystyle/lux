@@ -383,6 +383,10 @@ public:
     std::vector<uint256> vBlockRequested;
     int64_t nNextInvSend;
 
+    // Block and TXN accept times
+    std::atomic<int64_t> nLastBlockTime;
+    std::atomic<int64_t> nLastTXTime;
+
     // Ping time measurement:
     // The pong reply we're expecting, or 0 if no pong expected.
     std::atomic<uint64_t> nPingNonceSent;

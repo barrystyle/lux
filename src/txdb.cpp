@@ -496,7 +496,6 @@ bool CBlockTreeDB::LoadBlockIndexGuts()
 
     // Load mapBlockIndex
     while (pcursor->Valid()) {
-        if (fRequestShutdown) return false;
         boost::this_thread::interruption_point();
         try {
             leveldb::Slice slKey = pcursor->key();
@@ -536,25 +535,12 @@ bool CBlockTreeDB::LoadBlockIndexGuts()
                 pindexNew->nStakeTime = diskindex.nStakeTime;
                 pindexNew->hashProofOfStake = diskindex.hashProofOfStake;
 
-                bool isPoW = (diskindex.nNonce != 0) && pindexNew->nHeight <= Params().LAST_POW_BLOCK();
-                if (isPoW) {
-                    auto const &hash(pindexNew->GetBlockHash());
-                    if (!CheckProofOfWork(hash, pindexNew->nBits, Params().GetConsensus())) {
-                        unsigned int nBits = pindexPrev ? pindexPrev->nBits : 0;
-                        return error("%s: CheckProofOfWork failed: %d %s (%d, %d)", __func__, pindexNew->nHeight, hash.GetHex(), pindexNew->nBits, nBits);
-                    }
-                } else {
+                bool isPoS = diskindex.nNonce == 0;
+                if (isPoS) {
                     stake->MarkStake(pindexNew->prevoutStake, pindexNew->nStakeTime);
                     auto const &hash(pindexNew->GetBlockHash());
                     uint256 proof;
-                    if (pindexNew->hashProofOfStake == 0) {
-                        LogPrint("debug", "skip invalid indexed orphan block %d %s with empty data\n", pindexNew->nHeight, hash.GetHex());
-                        nDiscarded++;
-                        nFirstDiscarded = diskindex.nHeight < nFirstDiscarded ? diskindex.nHeight : nFirstDiscarded;
-                        batch.Erase(make_pair(DB_BLOCK_INDEX, hash));
-                        pcursor->Next();
-                        continue;
-                    } else if (stake->GetProof(hash, proof)) {
+                    if (stake->GetProof(hash, proof)) {
                         if (proof != pindexNew->hashProofOfStake)
                             return error("%s: diverged stake %s, %s (block %s)\n", __func__, 
                                          pindexNew->hashProofOfStake.GetHex(), proof.GetHex(), hash.GetHex());

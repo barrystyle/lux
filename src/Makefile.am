@@ -1,6 +1,6 @@
 DIST_SUBDIRS = secp256k1
 AM_LDFLAGS = $(PTHREAD_CFLAGS) $(LIBTOOL_LDFLAGS)
-AM_CXXFLAGS = $(HARDENED_CXXFLAGS) $(ERROR_CXXFLAGS) -DETH_FATDB=1
+AM_CXXFLAGS = $(HARDENED_CXXFLAGS) $(ERROR_CXXFLAGS) -DETH_FATDB=1 -Wno-deprecated-copy
 AM_CPPFLAGS = $(HARDENED_CPPFLAGS) -DLUX_BUILD
 EXTRA_LIBRARIES =
 
@@ -149,6 +149,7 @@ BITCOIN_CORE_H = \
   script/sign.h \
   script/standard.h \
   script/script_error.h \
+  rxutil/seedstore.h \
   serialize.h \
   spentindex.h \
   spork.h \
@@ -320,7 +321,58 @@ crypto_libbitcoin_crypto_a_SOURCES = \
   cpp-ethereum/utils/libscrypt/sha256.h \
   cpp-ethereum/utils/libscrypt/slowequals.c \
   cpp-ethereum/utils/libscrypt/slowequals.h \
-  cpp-ethereum/utils/libscrypt/sysendian.h
+  cpp-ethereum/utils/libscrypt/sysendian.h \
+  RandomX/src/aes_hash.cpp \
+  RandomX/src/aes_hash.hpp \
+  RandomX/src/allocator.cpp \
+  RandomX/src/allocator.hpp \
+  RandomX/src/argon2_avx2.c \
+  RandomX/src/argon2_core.c \
+  RandomX/src/argon2_ref.c \
+  RandomX/src/argon2_ssse3.c \
+  RandomX/src/assembly_generator_x86.cpp \
+  RandomX/src/assembly_generator_x86.hpp \
+  RandomX/src/blake2/blake2b.c \
+  RandomX/src/blake2_generator.cpp \
+  RandomX/src/blake2_generator.hpp \
+  RandomX/src/bytecode_machine.cpp \
+  RandomX/src/bytecode_machine.hpp \
+  RandomX/src/common.hpp \
+  RandomX/src/cpu.cpp \
+  RandomX/src/cpu.hpp \
+  RandomX/src/dataset.cpp \
+  RandomX/src/dataset.hpp \
+  RandomX/src/instruction.cpp \
+  RandomX/src/instruction.hpp \
+  RandomX/src/instructions_portable.cpp \
+  RandomX/src/instruction_weights.hpp \
+  RandomX/src/jit_compiler_a64.cpp \
+  RandomX/src/jit_compiler_a64.hpp \
+  RandomX/src/jit_compiler_a64_static.hpp \
+  RandomX/src/jit_compiler_fallback.hpp \
+  RandomX/src/jit_compiler.hpp \
+  RandomX/src/jit_compiler_x86.cpp \
+  RandomX/src/jit_compiler_x86.hpp \
+  RandomX/src/jit_compiler_x86_static.hpp \
+  RandomX/src/program.hpp \
+  RandomX/src/randomx.cpp \
+  RandomX/src/reciprocal.c \
+  RandomX/src/soft_aes.cpp \
+  RandomX/src/superscalar.cpp \
+  RandomX/src/superscalar.hpp \
+  RandomX/src/superscalar_program.hpp \
+  RandomX/src/virtual_machine.cpp \
+  RandomX/src/virtual_machine.hpp \
+  RandomX/src/virtual_memory.cpp \
+  RandomX/src/virtual_memory.hpp \
+  RandomX/src/vm_compiled.cpp \
+  RandomX/src/vm_compiled.hpp \
+  RandomX/src/vm_compiled_light.cpp \
+  RandomX/src/vm_compiled_light.hpp \
+  RandomX/src/vm_interpreted.cpp \
+  RandomX/src/vm_interpreted.hpp \
+  RandomX/src/vm_interpreted_light.cpp \
+  RandomX/src/vm_interpreted_light.hpp
 
 if USE_ASM
 crypto/crypto_libbitcoin_crypto_a-sha256.$(OBJEXT) : CXXFLAGS += -DUSE_ASM
@@ -374,6 +426,7 @@ libbitcoin_consensus_a_SOURCES = \
   script/script_error.cpp \
   script/script_error.h \
   script/standard.cpp \
+  rxutil/seedstore.cpp \
   serialize.h \
   tinyformat.h \
   uint256.cpp \

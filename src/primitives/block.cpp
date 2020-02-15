@@ -6,6 +6,9 @@
 #include "primitives/block.h"
 
 #include "hash.h"
+#include "main.h"
+#include "rxutil/rxlux.h"
+#include "rxutil/seedstore.h"
 #include "script/standard.h"
 #include "script/sign.h"
 #include "tinyformat.h"
@@ -14,14 +17,31 @@
 #include "chainparams.h"
 #include "versionbits.h"
 
-uint256 CBlockHeader::GetHash(bool phi2block) const {
-    if (phi2block && (nVersion & (1 << 30)))
+uint256 CBlockHeader::GetGenesisHash() const
+{
+    return Phi1612(BEGIN(nVersion), END(nNonce));
+}
+
+uint256 CBlockHeader::GetHash(int nHeight) const
+{
+    const int nSwitchPhi2Block = Params().SwitchPhi2Block();
+    const int nSwitchRandomXBlock = Params().SwitchRandomXBlock();
+
+    uint256 thash;
+    std::string headerSeed;
+    barrysPreposterouslyNamedSeedHashFunction(nHeight, headerSeed);
+    if (nHeight >= nSwitchRandomXBlock) {
+        rxlux hashInstance;
+        hashInstance.setheader(&this);
+        hashInstance.rx_slow_hash();
+        memcpy(thash,hashInstance.getresult(),32);
+        return thash;
+    } else if (nHeight >= nSwitchPhi2Block && (nVersion & (1 << 30))) {
         return phi2_hash(BEGIN(nVersion), END(hashUTXORoot));
-    else if (nVersion > VERSIONBITS_LAST_OLD_BLOCK_VERSION && phi2block) {
+    } else if (nHeight >= nSwitchPhi2Block) {
         return phi2_hash(BEGIN(nVersion), END(nNonce));
-    } else {
-        return Phi1612(BEGIN(nVersion), END(nNonce));
     }
+    return Phi1612(BEGIN(nVersion), END(nNonce));
 }
 
 uint256 CBlock::BuildMerkleTree(bool* fMutated) const

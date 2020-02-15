@@ -272,7 +272,6 @@ CDB::CDB(const std::string& strFilename, const char* pszMode, bool fFlushOnClose
 {
     int ret;
     fReadOnly = (!strchr(pszMode, '+') && !strchr(pszMode, 'w'));
-    fFlushOnClose = fFlushOnCloseIn;
     if (strFilename.empty())
         return;
 
@@ -349,8 +348,7 @@ void CDB::Close()
     activeTxn = NULL;
     pdb = NULL;
 
-    if (fFlushOnClose)
-        Flush();
+    Flush();
 
     {
         LOCK(bitdb.cs_db);
